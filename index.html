@@ -11,6 +11,8 @@ background:#03050a;color:white;
 font-family:'Segoe UI', Arial, sans-serif;
 overflow:hidden;
 user-select:none;
+-webkit-user-select:none;
+touch-action: manipulation;
 }
 #game{
 position:relative;width:100%;height:100dvh;
@@ -186,20 +188,21 @@ display:flex;justify-content:space-between;
 padding:0 25px;z-index:10;pointer-events:none;
 }
 .control{
-width:65px;height:65px;border-radius:50%;
-background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);
+width:70px;height:70px;border-radius:50%;
+background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
 color:white;font-size:27px;
 pointer-events:auto;touch-action:none;
 backdrop-filter:blur(4px);
+display:flex;align-items:center;justify-content:center;
 }
 #boost{
-width:95px;height:65px;border-radius:15px;
+width:100px;height:70px;border-radius:15px;
 background:linear-gradient(135deg, #007cda, #004d8a);font-size:13px;
 box-shadow: 0 4px 15px rgba(0,124,218,0.4);
 }
 .hidden{display:none!important}
 #hint{
-position:absolute;bottom:100px;left:0;right:0;
+position:absolute;bottom:105px;left:0;right:0;
 text-align:center;color:rgba(255,255,255,0.5);font-size:11px;
 pointer-events:none;
 }
@@ -238,7 +241,7 @@ pointer-events:none;
 <div class="taillights"><span></span><span></span></div>
 </div>
 
-<div id="hint">USA ← → OU A / D PARA DESVIAR</div>
+<div id="hint">USA OS BOTÕES EM BAIXO PARA VIRAR</div>
 
 <div id="controls">
 <button class="control" id="left">◀</button>
@@ -775,25 +778,42 @@ function collide(a, b){
 
 document.addEventListener('keydown', e => {
   if(['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
   keys[e.key === ' ' ? 'Space' : e.key.toLowerCase()] = true;
   if(['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
 });
 
 document.addEventListener('keyup', e => {
   if(['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
   keys[e.key === ' ' ? 'Space' : e.key.toLowerCase()] = false;
 });
 
 function hold(id, key){
   const btn = document.getElementById(id);
-  btn.addEventListener('pointerdown', e => {
-    e.preventDefault(); keys[key] = true;
+  
+  // Suporte a toque em dispositivos móveis
+  btn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    keys[key] = true;
+  }, { passive: false });
+  
+  ['touchend', 'touchcancel'].forEach(ev => {
+    btn.addEventListener(ev, e => {
+      e.preventDefault();
+      keys[key] = false;
+    }, { passive: false });
   });
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
-    btn.addEventListener(ev, () => keys[key] = false)
-  );
+
+  // Suporte a rato em computadores
+  btn.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    keys[key] = true;
+  });
+  
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => {
+    btn.addEventListener(ev, () => {
+      keys[key] = false;
+    });
+  });
 }
 
 hold('left', 'arrowleft');
