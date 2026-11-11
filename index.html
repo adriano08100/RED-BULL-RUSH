@@ -188,22 +188,22 @@ display:flex;justify-content:space-between;
 padding:0 25px;z-index:10;pointer-events:none;
 }
 .control{
-width:70px;height:70px;border-radius:50%;
-background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
-color:white;font-size:27px;
+width:75px;height:75px;border-radius:50%;
+background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.5);
+color:white;font-size:28px;
 pointer-events:auto;touch-action:none;
 backdrop-filter:blur(4px);
 display:flex;align-items:center;justify-content:center;
 }
 #boost{
-width:100px;height:70px;border-radius:15px;
+width:110px;height:75px;border-radius:16px;
 background:linear-gradient(135deg, #007cda, #004d8a);font-size:13px;
 box-shadow: 0 4px 15px rgba(0,124,218,0.4);
 }
 .hidden{display:none!important}
 #hint{
-position:absolute;bottom:105px;left:0;right:0;
-text-align:center;color:rgba(255,255,255,0.5);font-size:11px;
+position:absolute;bottom:110px;left:0;right:0;
+text-align:center;color:rgba(255,255,255,0.6);font-size:11px;
 pointer-events:none;
 }
 
@@ -241,7 +241,7 @@ pointer-events:none;
 <div class="taillights"><span></span><span></span></div>
 </div>
 
-<div id="hint">USA OS BOTÕES EM BAIXO PARA VIRAR</div>
+<div id="hint">USA OS BOTÕES TÁTEIS PARA VIRAR</div>
 
 <div id="controls">
 <button class="control" id="left">◀</button>
@@ -639,7 +639,7 @@ function loop(time){
   let speedUpgradeBonus = 1 + ((upgrades.speed - 1) * 0.1);
   let nitroUpgradeBonus = 1 + ((upgrades.nitro - 1) * 0.15);
   
-  const boosting = keys.Space && nitro > 0;
+  const boosting = keys[' '] && nitro > 0;
   if(boosting) nitro = Math.max(0, nitro - (0.6 / nitroUpgradeBonus) * dt);
   else nitro = Math.min(100, nitro + 0.13 * dt);
   
@@ -647,8 +647,8 @@ function loop(time){
   speed = Math.min(12, speed + 0.0008 * dt);
   
   let handling = currentCar === 'neon' ? 7.2 : (currentCar === 'purple' ? 7.8 : 6.5);
-  if(keys.ArrowLeft || keys.a) playerX -= handling * dt;
-  if(keys.ArrowRight || keys.d) playerX += handling * dt;
+  if(keys.ArrowLeft || keys.a || keys.A) playerX -= handling * dt;
+  if(keys.ArrowRight || keys.d || keys.D) playerX += handling * dt;
   positionPlayer();
   
   lines.forEach(l => {
@@ -778,47 +778,46 @@ function collide(a, b){
 
 document.addEventListener('keydown', e => {
   if(['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-  keys[e.key === ' ' ? 'Space' : e.key.toLowerCase()] = true;
+  keys[e.key] = true;
   if(['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
 });
 
 document.addEventListener('keyup', e => {
   if(['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-  keys[e.key === ' ' ? 'Space' : e.key.toLowerCase()] = false;
+  keys[e.key] = false;
 });
 
-function hold(id, key){
+function hold(id, keyName){
   const btn = document.getElementById(id);
+  if(!btn) return;
   
-  // Suporte a toque em dispositivos móveis
   btn.addEventListener('touchstart', e => {
     e.preventDefault();
-    keys[key] = true;
+    keys[keyName] = true;
   }, { passive: false });
   
   ['touchend', 'touchcancel'].forEach(ev => {
     btn.addEventListener(ev, e => {
       e.preventDefault();
-      keys[key] = false;
+      keys[keyName] = false;
     }, { passive: false });
   });
 
-  // Suporte a rato em computadores
   btn.addEventListener('pointerdown', e => {
     e.preventDefault();
-    keys[key] = true;
+    keys[keyName] = true;
   });
   
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => {
     btn.addEventListener(ev, () => {
-      keys[key] = false;
+      keys[keyName] = false;
     });
   });
 }
 
-hold('left', 'arrowleft');
-hold('right', 'arrowright');
-hold('boost', 'Space');
+hold('left', 'ArrowLeft');
+hold('right', 'ArrowRight');
+hold('boost', ' ');
 
 window.addEventListener('resize', positionPlayer);
 </script>
